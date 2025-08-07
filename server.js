@@ -5,7 +5,7 @@ const http = require('http');
 
 // Initialize Express app
 const app = express();
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 443; // MUST BE HTTPS as to allow in restricted networks
 
 // Create HTTP server (Render handles HTTPS termination)
 const server = http.createServer(app);
