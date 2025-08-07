@@ -157,6 +157,13 @@ function handleJoinRoom(ws, message) {
     username: username
   }));
   
+  // Send server welcome message to the joining user
+  ws.send(JSON.stringify({
+    type: 'message',
+    username: 'Server',
+    content: 'Connected successfully'
+  }));
+  
   // Broadcast join notification to all other users in the room
   broadcastToRoom(roomHash, {
     type: 'join',
