@@ -186,58 +186,60 @@ function handleJoinRoom(ws, message) {
 }
 
 // Handle slash commands
-function handleSlashCommand(ws, command) {
-  // Find the room this user belongs to
-  for (const [roomHash, room] of chatRooms.entries()) {
-    if (room.connections.has(ws)) {
-      const username = room.users.get(ws);
+function handleSlashCommand(ws, command, roomHash) {
+  const room = chatRooms.get(roomHash);
+  if (!room) return;
+  
+  const username = room.users.get(ws);
+  
+  switch (command.toLowerCase()) {
+    case '/help':
+      // Send help message with proper formatting
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/help - show this message'
+      });
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/active - show active users'
+      });
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/roll - roll the die, outputs a number from 1-6'
+      });
+      break;
       
-      switch (command.toLowerCase()) {
-        case '/help':
-          ws.send(JSON.stringify({
-            type: 'message',
-            username: 'Server',
-            content: '/help - show this message\n/active - show active users\n/roll - roll the die, output a number from 1-6'
-          }));
-          break;
-          
-        case '/active':
-          const activeUsers = Array.from(room.users.values());
-          ws.send(JSON.stringify({
-            type: 'message',
-            username: 'Server',
-            content: `Active users - ${activeUsers.join(', ')}`
-          }));
-          break;
-          
-        case '/roll':
-          const rollResult = Math.floor(Math.random() * 6) + 1;
-          ws.send(JSON.stringify({
-            type: 'message',
-            username: 'Server',
-            content: `🎲 ${username} rolled a ${rollResult}!`
-          }));
-          break;
-          
-        default:
-          ws.send(JSON.stringify({
-            type: 'message',
-            username: 'Server',
-            content: `Unknown command: ${command}. Type /help for available commands.`
-          }));
-          break;
-      }
+    case '/active':
+      const activeUsers = Array.from(room.users.values());
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: `Active users - ${activeUsers.join(', ')}`
+      });
+      break;
       
-      console.log(`User ${username} executed command: ${command}`);
-      return;
-    }
+    case '/roll':
+      const rollResult = Math.floor(Math.random() * 6) + 1;
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: `🎲 ${username} rolled a ${rollResult}!`
+      });
+      break;
+      
+    default:
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: `Unknown command: ${command}. Type /help for available commands.`
+      });
+      break;
   }
   
-  // User not in any room
-  ws.send(JSON.stringify({
-    type: 'error',
-    message: 'You must join a room before using commands'
-  }));
+  console.log(`User ${username} executed command: ${command}`);
 }
 
 // Handle chat messages
@@ -252,18 +254,26 @@ function handleChatMessage(ws, message) {
     return;
   }
   
-  // Check if this is a slash command
-  if (content.trim().startsWith('/')) {
-    handleSlashCommand(ws, content.trim());
-    return;
-  }
-  
   // Find the room this user belongs to
   for (const [roomHash, room] of chatRooms.entries()) {
     if (room.connections.has(ws)) {
       const username = room.users.get(ws);
       
-      // Broadcast message to all users in the room (including sender)
+      // Check if this is a slash command
+      if (content.trim().startsWith('/')) {
+        // First broadcast the command message to all users
+        broadcastToRoom(roomHash, {
+          type: 'message',
+          username: username,
+          content: content
+        });
+        
+        // Then handle the command and broadcast the server response
+        handleSlashCommand(ws, content.trim(), roomHash);
+        return;
+      }
+      
+      // Regular message - broadcast to all users in the room (including sender)
       broadcastToRoom(roomHash, {
         type: 'message',
         username: username,
