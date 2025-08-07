@@ -1,0 +1,25 @@
+{
+  "name": "termchat-backend",
+  "version": "1.0.0",
+  "description": "Terminal chat application backend server for Railway deployment",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ws": "^8.14.2"
+  },
+  "keywords": [
+    "chat",
+    "websocket",
+    "terminal",
+    "real-time"
+  ],
+  "author": "ZProLegend007",
+  "license": "MIT"
+}
