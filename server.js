@@ -147,6 +147,9 @@ function handleJoinRoom(ws, message) {
   
   const room = chatRooms.get(roomHash);
   
+  // Check if there are existing users in the room (before adding current user)
+  const existingUsers = Array.from(room.users.values());
+  
   // Add user to room
   room.connections.add(ws);
   room.users.set(ws, username);
@@ -164,6 +167,15 @@ function handleJoinRoom(ws, message) {
     content: 'Connected successfully'
   }));
   
+  // If there are existing users, send active users notification
+  if (existingUsers.length > 0) {
+    ws.send(JSON.stringify({
+      type: 'message',
+      username: 'Server',
+      content: `Active users - ${existingUsers.join(', ')}`
+    }));
+  }
+  
   // Broadcast join notification to all other users in the room
   broadcastToRoom(roomHash, {
     type: 'join',
@@ -171,6 +183,61 @@ function handleJoinRoom(ws, message) {
   }, ws);
   
   console.log(`User ${username} joined room ${chatname}`);
+}
+
+// Handle slash commands
+function handleSlashCommand(ws, command) {
+  // Find the room this user belongs to
+  for (const [roomHash, room] of chatRooms.entries()) {
+    if (room.connections.has(ws)) {
+      const username = room.users.get(ws);
+      
+      switch (command.toLowerCase()) {
+        case '/help':
+          ws.send(JSON.stringify({
+            type: 'message',
+            username: 'Server',
+            content: '/help - show this message\n/active - show active users\n/roll - roll the die, output a number from 1-6'
+          }));
+          break;
+          
+        case '/active':
+          const activeUsers = Array.from(room.users.values());
+          ws.send(JSON.stringify({
+            type: 'message',
+            username: 'Server',
+            content: `Active users - ${activeUsers.join(', ')}`
+          }));
+          break;
+          
+        case '/roll':
+          const rollResult = Math.floor(Math.random() * 6) + 1;
+          ws.send(JSON.stringify({
+            type: 'message',
+            username: 'Server',
+            content: `🎲 ${username} rolled a ${rollResult}!`
+          }));
+          break;
+          
+        default:
+          ws.send(JSON.stringify({
+            type: 'message',
+            username: 'Server',
+            content: `Unknown command: ${command}. Type /help for available commands.`
+          }));
+          break;
+      }
+      
+      console.log(`User ${username} executed command: ${command}`);
+      return;
+    }
+  }
+  
+  // User not in any room
+  ws.send(JSON.stringify({
+    type: 'error',
+    message: 'You must join a room before using commands'
+  }));
 }
 
 // Handle chat messages
@@ -182,6 +249,12 @@ function handleChatMessage(ws, message) {
       type: 'error',
       message: 'Message content cannot be empty'
     }));
+    return;
+  }
+  
+  // Check if this is a slash command
+  if (content.trim().startsWith('/')) {
+    handleSlashCommand(ws, content.trim());
     return;
   }
   
