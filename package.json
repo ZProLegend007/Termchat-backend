@@ -1,7 +1,7 @@
 {
   "name": "termchat-backend",
   "version": "1.0.0",
-  "description": "Terminal chat application backend server for Render deployment",
+  "description": "Terminal chat application backend server for Azure Web Apps deployment",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
