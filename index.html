@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TermChat</title>
+    <style>
+        body {
+            background-color: #000000;
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            border-bottom: 2px solid #00ff00;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            text-shadow: 0 0 10px #00ff00;
+            letter-spacing: 3px;
+        }
+
+        .login-section {
+            background-color: #111111;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 30px;
+            border: 1px solid #00ff00;
+        }
+
+        .login-section h2 {
+            margin: 0 0 20px 0;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px;
+            background-color: #222222;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        button {
+            background-color: #003300;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #00ff00;
+            color: #000000;
+        }
+
+        .chat-section {
+            flex: 1;
+            display: none;
+            flex-direction: column;
+            background-color: #111111;
+            border: 1px solid #00ff00;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background-color: #003300;
+            padding: 15px 20px;
+            border-bottom: 1px solid #00ff00;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h3 {
+            margin: 0;
+            font-size: 1.2em;
+        }
+
+        .status {
+            color: #00ffff;
+            font-size: 0.9em;
+        }
+
+        .messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #000000;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            background-color: #111111;
+            border-left: 3px solid #00ff00;
+        }
+
+        .message.server {
+            border-left-color: #ffff00;
+            background-color: #222200;
+        }
+
+        .message.join {
+            border-left-color: #00ffff;
+            background-color: #002222;
+        }
+
+        .message.leave {
+            border-left-color: #ff6600;
+            background-color: #221100;
+        }
+
+        .message-username {
+            font-weight: bold;
+            margin-right: 10px;
+            color: #00ffff;
+        }
+
+        .message-content {
+            word-wrap: break-word;
+        }
+
+        .input-section {
+            background-color: #003300;
+            padding: 20px;
+            border-top: 1px solid #00ff00;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        #messageInput {
+            flex: 1;
+            padding: 12px;
+            background-color: #222222;
+            color: #00ff00;
+            border: 1px solid #00ff00;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+
+        #messageInput:focus {
+            outline: none;
+            border-color: #00ffff;
+            box-shadow: 0 0 10px #00ffff;
+        }
+
+        .help-text {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #888888;
+            text-align: center;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* Scrollbar styling */
+        .messages::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .messages::-webkit-scrollbar-track {
+            background: #333333;
+        }
+
+        .messages::-webkit-scrollbar-thumb {
+            background: #00ff00;
+            border-radius: 4px;
+        }
+
+        .messages::-webkit-scrollbar-thumb:hover {
+            background: #00ffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>TermChat</h1>
+        </div>
+
+        <div class="login-section" id="loginSection">
+            <h2>Connect to Chat Room</h2>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="username">Username:</label>
+                    <input type="text" id="username" placeholder="Enter your username" maxlength="20" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="chatname">Room Name:</label>
+                    <input type="text" id="chatname" placeholder="Enter room name" maxlength="30" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Room Password:</label>
+                    <input type="password" id="password" placeholder="Enter room password" maxlength="50" required>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button id="connectBtn">Connect to Room</button>
+            </div>
+        </div>
+
+        <div class="chat-section" id="chatSection">
+            <div class="chat-header">
+                <h3 id="roomTitle">Chat Room</h3>
+                <div class="status" id="connectionStatus">Connected</div>
+            </div>
+            <div class="messages" id="messages"></div>
+            <div class="input-section">
+                <div class="input-row">
+                    <input type="text" id="messageInput" placeholder="Type your message... (type /help for commands)" maxlength="500">
+                    <button id="sendBtn">Send</button>
+                    <button id="disconnectBtn">Disconnect</button>
+                </div>
+                <div class="help-text">
+                    Commands: /help, /active, /roll
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let ws = null;
+        let currentUsername = '';
+        let currentRoom = '';
+
+        // DOM elements
+        const loginSection = document.getElementById('loginSection');
+        const chatSection = document.getElementById('chatSection');
+        const usernameInput = document.getElementById('username');
+        const chatnameInput = document.getElementById('chatname');
+        const passwordInput = document.getElementById('password');
+        const connectBtn = document.getElementById('connectBtn');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const disconnectBtn = document.getElementById('disconnectBtn');
+        const messagesDiv = document.getElementById('messages');
+        const roomTitle = document.getElementById('roomTitle');
+        const connectionStatus = document.getElementById('connectionStatus');
+
+        // Auto-focus on username input when page loads
+        window.addEventListener('load', () => {
+            usernameInput.focus();
+        });
+
+        // Event listeners
+        connectBtn.addEventListener('click', connect);
+        sendBtn.addEventListener('click', sendMessage);
+        disconnectBtn.addEventListener('click', disconnect);
+
+        // Enter key handling
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                if (!chatSection.classList.contains('hidden')) {
+                    // In chat mode
+                    sendMessage();
+                } else {
+                    // In login mode
+                    connect();
+                }
+            }
+        });
+
+        function connect() {
+            const username = usernameInput.value.trim();
+            const chatname = chatnameInput.value.trim();
+            const password = passwordInput.value.trim();
+
+            if (!username || !chatname || !password) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            currentUsername = username;
+            currentRoom = chatname;
+
+            // Connect to WebSocket (use current protocol and host)
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host || 'localhost:3000';
+            const wsUrl = `${protocol}//${host}`;
+
+            try {
+                ws = new WebSocket(wsUrl);
+
+                ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    
+                    // Send join request
+                    ws.send(JSON.stringify({
+                        type: 'join',
+                        username: username,
+                        chatname: chatname,
+                        password: password
+                    }));
+                };
+
+                ws.onmessage = (event) => {
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleMessage(data);
+                    } catch (error) {
+                        console.error('Error parsing message:', error);
+                    }
+                };
+
+                ws.onclose = () => {
+                    console.log('WebSocket disconnected');
+                    connectionStatus.textContent = 'Disconnected';
+                    connectionStatus.style.color = '#ff6600';
+                };
+
+                ws.onerror = (error) => {
+                    console.error('WebSocket error:', error);
+                    alert('Failed to connect to server');
+                };
+
+            } catch (error) {
+                console.error('Connection error:', error);
+                alert('Failed to connect to server');
+            }
+        }
+
+        function handleMessage(data) {
+            switch (data.type) {
+                case 'join':
+                    if (data.username === currentUsername) {
+                        // Successfully joined
+                        loginSection.style.display = 'none';
+                        chatSection.style.display = 'flex';
+                        roomTitle.textContent = `Room: ${currentRoom}`;
+                        connectionStatus.textContent = 'Connected';
+                        connectionStatus.style.color = '#00ffff';
+                        
+                        // Focus on message input
+                        setTimeout(() => messageInput.focus(), 100);
+                    } else {
+                        // Another user joined
+                        addMessage(`🎉 ${data.username} has joined the room`, 'join');
+                    }
+                    break;
+
+                case 'leave':
+                    addMessage(`👋 ${data.username} has left the room`, 'leave');
+                    break;
+
+                case 'message':
+                    addMessage(`${data.username}: ${data.content}`, data.username === 'Server' ? 'server' : 'message');
+                    break;
+
+                case 'error':
+                    alert(`Error: ${data.message}`);
+                    break;
+
+                default:
+                    console.log('Unknown message type:', data.type);
+            }
+        }
+
+        function addMessage(text, type = 'message') {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+            
+            if (type === 'message' || type === 'server') {
+                const parts = text.split(': ');
+                if (parts.length >= 2) {
+                    const username = parts[0];
+                    const content = parts.slice(1).join(': ');
+                    messageDiv.innerHTML = `<span class="message-username">${username}:</span><span class="message-content">${content}</span>`;
+                } else {
+                    messageDiv.innerHTML = `<span class="message-content">${text}</span>`;
+                }
+            } else {
+                messageDiv.innerHTML = `<span class="message-content">${text}</span>`;
+            }
+
+            messagesDiv.appendChild(messageDiv);
+            messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+
+        function sendMessage() {
+            if (!ws || ws.readyState !== WebSocket.OPEN) {
+                alert('Not connected to server');
+                return;
+            }
+
+            const message = messageInput.value.trim();
+            if (!message) {
+                return;
+            }
+
+            // Send message
+            ws.send(JSON.stringify({
+                type: 'message',
+                content: message
+            }));
+
+            // Clear input and focus
+            messageInput.value = '';
+            messageInput.focus();
+        }
+
+        function disconnect() {
+            if (ws) {
+                ws.close();
+            }
+            
+            // Reset UI
+            loginSection.style.display = 'block';
+            chatSection.style.display = 'none';
+            messagesDiv.innerHTML = '';
+            messageInput.value = '';
+            
+            // Clear form and focus on username
+            usernameInput.value = '';
+            chatnameInput.value = '';
+            passwordInput.value = '';
+            usernameInput.focus();
+        }
+    </script>
+</body>
+</html>

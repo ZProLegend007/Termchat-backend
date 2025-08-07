@@ -7,6 +7,9 @@ const http = require('http');
 const app = express();
 const port = process.env.PORT || 3000; // Azure Web Apps provides dynamic port assignment, defaults to 3000 for local development
 
+// Serve static files (HTML, CSS, JS)
+app.use(express.static('.'));
+
 // Create HTTP server (Azure Web Apps handles HTTPS termination)
 const server = http.createServer(app);
 
@@ -60,13 +63,19 @@ function removeUserFromRoom(ws) {
   }
 }
 
-// Basic health check endpoint
+// Basic health check endpoint that redirects to the chat interface
 app.get('/', (req, res) => {
-  res.json({ 
-    status: 'Termchat Backend Server Running',
-    activeRooms: chatRooms.size,
-    timestamp: new Date().toISOString()
-  });
+  // Check if it's a programmatic request (JSON) or browser request
+  if (req.headers.accept && req.headers.accept.includes('application/json')) {
+    res.json({ 
+      status: 'Termchat Backend Server Running',
+      activeRooms: chatRooms.size,
+      timestamp: new Date().toISOString()
+    });
+  } else {
+    // Serve the chat interface
+    res.sendFile(__dirname + '/index.html');
+  }
 });
 
 // Health check for Azure Web Apps
@@ -261,14 +270,7 @@ function handleChatMessage(ws, message) {
       
       // Check if this is a slash command
       if (content.trim().startsWith('/')) {
-        // First broadcast the command message to all users
-        broadcastToRoom(roomHash, {
-          type: 'message',
-          username: username,
-          content: content
-        });
-        
-        // Then handle the command and broadcast the server response
+        // Handle the command directly without broadcasting it as a user message first
         handleSlashCommand(ws, content.trim(), roomHash);
         return;
       }
