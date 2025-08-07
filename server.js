@@ -5,9 +5,9 @@ const http = require('http');
 
 // Initialize Express app
 const app = express();
-const port = process.env.PORT || 443; // MUST BE HTTPS as to allow in restricted networks
+const port = process.env.PORT || 3000; // Azure Web Apps provides dynamic port assignment, defaults to 3000 for local development
 
-// Create HTTP server (Render handles HTTPS termination)
+// Create HTTP server (Azure Web Apps handles HTTPS termination)
 const server = http.createServer(app);
 
 // Create WebSocket server
@@ -69,7 +69,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Health check for Render
+// Health check for Azure Web Apps
 app.get('/health', (req, res) => {
   res.status(200).json({ status: 'healthy' });
 });
