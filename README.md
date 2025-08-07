@@ -1,16 +1,16 @@
 # Termchat Backend Server
 
-A real-time WebSocket chat server for terminal-based chat applications, designed for Railway deployment.
+A real-time WebSocket chat server for terminal-based chat applications, optimized for Render deployment.
 
 ## Features
 
 - **Real-time messaging** via WebSocket connections
 - **Isolated chat rooms** based on chatname + password combinations
-- **HTTPS support** on port 443 for restricted networks
+- **Secure HTTPS** support with flexible port configuration
 - **Join/leave notifications** ("A wild Username has appeared")
 - **Message formatting** with username prefixes
 - **Production-ready** error handling and connection management
-- **Railway deployment** ready with proper port handling
+- **Render deployment** optimized with proper port handling
 
 ## Quick Start
 
@@ -24,19 +24,22 @@ npm install
 npm start
 ```
 
-The server will run on port 443 by default, or use the `PORT` environment variable for custom ports.
+The server will run on port 3000 by default, or use the `PORT` environment variable for custom ports.
 
-### Railway Deployment
+### Render Deployment
 
-1. Connect your GitHub repository to Railway
-2. Deploy automatically - no additional configuration needed
-3. Railway will handle HTTPS termination and port assignment
+1. Connect your GitHub repository to Render
+2. Create a new Web Service
+3. Render will automatically detect the Node.js application
+4. Set the build command to `npm install`
+5. Set the start command to `npm start`
+6. Deploy - Render will handle HTTPS termination and port assignment automatically
 
 ## WebSocket API
 
 ### Connect
 ```javascript
-const ws = new WebSocket('wss://your-server.railway.app');
+const ws = new WebSocket('wss://your-app.onrender.com');
 ```
 
 ### Join a Room
