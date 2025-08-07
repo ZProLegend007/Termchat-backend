@@ -261,24 +261,17 @@ function handleChatMessage(ws, message) {
       
       // Check if this is a slash command
       if (content.trim().startsWith('/')) {
-        // First broadcast the command message to all users
-        broadcastToRoom(roomHash, {
-          type: 'message',
-          username: username,
-          content: content
-        });
-        
-        // Then handle the command and broadcast the server response
+        // Handle the command and broadcast the server response (don't broadcast the command itself)
         handleSlashCommand(ws, content.trim(), roomHash);
         return;
       }
       
-      // Regular message - broadcast to all users in the room (including sender)
+      // Regular message - broadcast to all users in the room EXCEPT the sender
       broadcastToRoom(roomHash, {
         type: 'message',
         username: username,
         content: content
-      });
+      }, ws);
       
       console.log(`Message from ${username}: ${content}`);
       return;
