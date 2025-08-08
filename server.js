@@ -269,6 +269,34 @@ function handleSlashCommand(ws, command, roomHash) {
       }
       break;
       
+    case '/colour':
+      // Generate random hex color (6-digit format)
+      const randomColor = Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0');
+      
+      // Send colourshift command to the user's frontend only
+      ws.send(JSON.stringify({
+        type: 'colourshift',
+        color: `#${randomColor}`
+      }));
+      break;
+      
+    case '/n':
+      // Hidden command - output ASCII art to everyone
+      const asciiArt = `░▒▓███████▓▒░  ░▒▓█▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░   ░▒▓██████▓▒░  
+░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ 
+░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░        ░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ 
+░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒▒▓███▓▒░ ░▒▓█▓▒▒▓███▓▒░ ░▒▓████████▓▒░ 
+░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ 
+░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ 
+░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░  ░▒▓██████▓▒░   ░▒▓██████▓▒░  ░▒▓█▓▒░░▒▓█▓▒░`;
+      
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: asciiArt
+      });
+      break;
+      
     default:
       broadcastToRoom(roomHash, {
         type: 'message',
