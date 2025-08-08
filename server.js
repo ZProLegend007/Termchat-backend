@@ -198,17 +198,37 @@ function handleSlashCommand(ws, command, roomHash) {
       broadcastToRoom(roomHash, {
         type: 'message',
         username: 'Server',
-        content: '/help - show this message'
+        content: '/help - shows this message'
       });
       broadcastToRoom(roomHash, {
         type: 'message',
         username: 'Server',
-        content: '/active - show active users'
+        content: '/active - shows active users'
       });
       broadcastToRoom(roomHash, {
         type: 'message',
         username: 'Server',
         content: '/roll - roll the die, outputs a number from 1-6'
+      });
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/quit - exits termchat'
+      });
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/clear - clears the message box'
+      });
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/colour - changes termchat to a random colour'
+      });
+      broadcastToRoom(roomHash, {
+        type: 'message',
+        username: 'Server',
+        content: '/pick - picks a random user from the chat'
       });
       break;
       
@@ -228,6 +248,25 @@ function handleSlashCommand(ws, command, roomHash) {
         username: 'Server',
         content: `🎲 ${username} rolled a ${rollResult}!`
       });
+      break;
+      
+    case '/pick':
+      const allUsers = Array.from(room.users.values());
+      if (allUsers.length === 0) {
+        broadcastToRoom(roomHash, {
+          type: 'message',
+          username: 'Server',
+          content: 'No users available to pick!'
+        });
+      } else {
+        const randomIndex = Math.floor(Math.random() * allUsers.length);
+        const pickedUser = allUsers[randomIndex];
+        broadcastToRoom(roomHash, {
+          type: 'message',
+          username: 'Server',
+          content: `I pick ${pickedUser}!`
+        });
+      }
       break;
       
     default:
